@@ -124,31 +124,40 @@ class HostController extends Controller
                 'history.object_type = ?' => 'host'
             ]);
 
-        $url = HostLinks::history($this->host);
-        if (! $this->params->has('page') || ($page = (int) $this->params->shift('page')) < 1) {
-            $page = 1;
-        }
+        $before = $this->params->shift('before', time());
+        $urlParams = clone $this->params;
+        $url = HostLinks::history($this->host)->overwriteParams(array_map('rawurldecode', $urlParams->toArray(false)));
 
         $limitControl = $this->createLimitControl();
-        $url->setParam('limit', $limitControl->getLimit());
+        $paginationControl = $this->createPaginationControl($history);
+        $sortControl = $this->createSortControl(
+            $history,
+            [
+                'history.event_time desc' => t('Event Time')
+            ]
+        );
+        $viewModeSwitcher = $this->createViewModeSwitcher($paginationControl, $limitControl);
+
         $history->peekAhead();
-        $history->limit($limitControl->getLimit());
-        if ($page > 1) {
-            if ($compact) {
-                $history->offset(($page - 1) * $limitControl->getLimit());
-            } else {
-                $history->limit($page * $limitControl->getLimit());
-            }
+
+        $page = $paginationControl->getCurrentPageNumber();
+
+        if ($page > 1 && ! $compact) {
+            $history->limit($page * $limitControl->getLimit());
         }
 
         yield $this->export($history);
 
         $this->addControl((new HostList([$this->host]))->setViewMode('minimal'));
+        $this->addControl($sortControl);
         $this->addControl($limitControl);
+        $this->addControl($viewModeSwitcher);
 
         $historyList = (new HistoryList($history->execute()))
+            ->setViewMode($viewModeSwitcher->getViewMode())
             ->setPageSize($limitControl->getLimit())
-            ->setLoadMoreUrl($url);
+            ->setLoadMoreUrl($url->setParam('before', $before));
+
         if ($compact) {
             $historyList->setPageNumber($page);
         }
