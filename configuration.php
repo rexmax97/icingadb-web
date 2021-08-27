@@ -131,6 +131,12 @@ namespace Icinga\Module\Icingadb
         $this->translate('Obfuscate custom variable values of Icinga objects that are part of the list')
     );
 
+    /*
+    * Available navigation items
+    */
+    $this->provideNavigationItem('host-action', $this->translate('Host Action'));
+    $this->provideNavigationItem('service-action', $this->translate('Service Action'));
+
     if (! $this::exists('monitoring')) {
         /**
          * Search urls
