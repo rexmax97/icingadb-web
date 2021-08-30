@@ -103,7 +103,7 @@ trait LoadMore
             yield $data;
         }
 
-        if (isset($showMore)) {
+        if ($count > 0 && isset($showMore)) {
             $this->add($showMore->setTag('li')->addAttributes(['class' => 'list-item']));
         }
     }
