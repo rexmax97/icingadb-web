@@ -56,8 +56,8 @@ class UserDetail extends BaseHtmlElement
     {
         return [
             new HtmlElement('h2', null, Text::create(t('Details'))),
-            new HorizontalKeyValue(t('E-Mail'), $this->user->email),
-            new HorizontalKeyValue(t('Pager'), $this->user->pager)
+            new HorizontalKeyValue(t('E-Mail'), $this->user->email ?: '-'),
+            new HorizontalKeyValue(t('Pager'), $this->user->pager ?: '-')
         ];
     }
 
